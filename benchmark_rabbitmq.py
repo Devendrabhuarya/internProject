@@ -4,7 +4,7 @@ import time
 
 import pika
 
-from common import BenchmarkConfig, BenchmarkResult, add_common_arguments, build_payload, latency_ms_from_payload, print_result
+from common import BenchmarkConfig, BenchmarkResult, add_common_arguments, build_payload, latency_ms_from_payload, print_result, write_ready_file
 
 
 def connect(host: str, port: int, queue: str):
@@ -15,10 +15,11 @@ def connect(host: str, port: int, queue: str):
     return connection, channel
 
 
-def run_subscriber(config: BenchmarkConfig, host: str, port: int, queue: str, purge: bool) -> BenchmarkResult:
+def run_subscriber(config: BenchmarkConfig, host: str, port: int, queue: str, purge: bool, ready_file: str | None) -> BenchmarkResult:
     connection, channel = connect(host, port, queue)
     if purge:
         channel.queue_purge(queue=queue)
+    write_ready_file(ready_file)
 
     latencies = []
     started_at = None
@@ -82,7 +83,7 @@ def main() -> None:
 
     config = BenchmarkConfig(args.count, args.payload_size, args.timeout)
     if args.role == "subscriber":
-        result = run_subscriber(config, host=args.host, port=args.port, queue=args.queue, purge=not args.no_purge)
+        result = run_subscriber(config, host=args.host, port=args.port, queue=args.queue, purge=not args.no_purge, ready_file=args.ready_file)
         print_result(result)
     else:
         result = run_publisher(config, host=args.host, port=args.port, queue=args.queue)

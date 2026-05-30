@@ -4,10 +4,10 @@ import time
 
 import paho.mqtt.client as mqtt
 
-from common import BenchmarkConfig, BenchmarkResult, add_common_arguments, build_payload, latency_ms_from_payload, print_result
+from common import BenchmarkConfig, BenchmarkResult, add_common_arguments, build_payload, latency_ms_from_payload, print_result, write_ready_file
 
 
-def run_subscriber(config: BenchmarkConfig, host: str, port: int, topic: str, qos: int) -> BenchmarkResult:
+def run_subscriber(config: BenchmarkConfig, host: str, port: int, topic: str, qos: int, ready_file: str | None) -> BenchmarkResult:
     latencies = []
     started_at = None
     subscribed = False
@@ -32,6 +32,16 @@ def run_subscriber(config: BenchmarkConfig, host: str, port: int, topic: str, qo
     subscribe_deadline = time.perf_counter() + config.timeout
     while not subscribed and time.perf_counter() < subscribe_deadline:
         client.loop(timeout=0.1)
+    if not subscribed:
+        client.disconnect()
+        return BenchmarkResult(
+            system=f"MQTT QoS {qos} subscriber",
+            sent=config.count,
+            received=0,
+            duration_seconds=0.0,
+            latencies_ms=[],
+        )
+    write_ready_file(ready_file)
 
     deadline = time.perf_counter() + config.timeout
     while len(latencies) < config.count and time.perf_counter() < deadline:
@@ -85,7 +95,7 @@ def main() -> None:
 
     config = BenchmarkConfig(args.count, args.payload_size, args.timeout)
     if args.role == "subscriber":
-        result = run_subscriber(config, host=args.host, port=args.port, topic=args.topic, qos=args.qos)
+        result = run_subscriber(config, host=args.host, port=args.port, topic=args.topic, qos=args.qos, ready_file=args.ready_file)
         print_result(result)
     else:
         result = run_publisher(config, host=args.host, port=args.port, topic=args.topic, qos=args.qos)

@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import statistics
 import time
 import uuid
@@ -96,7 +97,15 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--count", type=int, default=DEFAULT_COUNT)
     parser.add_argument("--payload-size", type=int, default=DEFAULT_PAYLOAD_SIZE)
     parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT)
+    parser.add_argument("--ready-file", help=argparse.SUPPRESS)
 
 
 def print_result(result: BenchmarkResult) -> None:
     print(json.dumps(result.summary(), indent=2))
+
+
+def write_ready_file(path: str | None) -> None:
+    if not path:
+        return
+    with open(path, "w", encoding="utf-8") as ready_file:
+        ready_file.write(str(os.getpid()))

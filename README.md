@@ -19,6 +19,7 @@ Blockchain is intentionally excluded. The current focus is only message queuing 
 - `common.py`: shared payload generation and metric calculation
 - `benchmark_rabbitmq.py`: RabbitMQ/AMQP benchmark
 - `benchmark_mqtt.py`: MQTT benchmark
+- `run_benchmarks.py`: automated multi-run benchmark runner
 - `requirements.txt`: Python dependencies
 
 ## Setup
@@ -86,6 +87,30 @@ python benchmark_rabbitmq.py --role publisher --count 10000 --payload-size 512
 python benchmark_mqtt.py --role subscriber --count 10000 --payload-size 512 --qos 1
 python benchmark_mqtt.py --role publisher --count 10000 --payload-size 512 --qos 1
 ```
+
+## Automated Benchmark Runner
+
+After both brokers are running, use the automated runner to repeat tests and save CSV/JSONL results:
+
+```bash
+python run_benchmarks.py --runs 3 --counts 1000 --payload-sizes 256 --mqtt-qos 1
+```
+
+Run a broader comparison:
+
+```bash
+python run_benchmarks.py \
+  --runs 5 \
+  --counts 1000,10000 \
+  --payload-sizes 128,512,1024 \
+  --mqtt-qos 0,1,2
+```
+
+The runner creates timestamped files in `results/`:
+
+- `benchmark-results-*.csv`: one row per test run
+- `benchmark-results-*.jsonl`: raw publisher/subscriber JSON for each run
+- `benchmark-aggregate-*.csv`: averaged results grouped by system, count, payload size, and QoS
 
 ## Suggested Internship Comparison Table
 

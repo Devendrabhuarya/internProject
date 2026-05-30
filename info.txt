@@ -1,0 +1,193 @@
+
+› could you explain matric
+
+
+• Yes. In your benchmark, metrics are the numbers used to compare RabbitMQ and MQTT.
+
+  Main Metrics
+
+  1. Sent
+
+  Number of messages the publisher tried to send.
+
+  Example:
+
+  sent = 1000
+
+  This means the publisher attempted to send 1000 messages.
+
+  2. Received
+
+  Number of messages the subscriber/consumer actually received.
+
+  Example:
+
+  received = 998
+
+  This means 998 messages reached the receiver.
+
+  3. Lost
+
+  Messages that were sent but not received.
+
+  Formula:
+
+  lost = sent - received
+
+  Example:
+
+  sent = 1000
+  received = 998
+  lost = 2
+
+  Lower is better.
+
+  4. Success Rate
+
+  Percentage of messages successfully received.
+
+  Formula:
+
+  success rate = received / sent * 100
+
+  Example:
+
+  998 / 1000 * 100 = 99.8%
+
+  Higher is better. Ideally it should be 100%.
+
+  5. Duration
+
+  Total time taken by the subscriber/consumer to receive the messages.
+
+  Example:
+
+  duration_seconds = 2.5
+
+  This means the receiver took 2.5 seconds to receive the messages.
+
+  6. Throughput
+
+  How many messages are processed per second.
+
+  Formula:
+
+  throughput = received / duration_seconds
+
+  Example:
+
+  1000 messages / 2 seconds = 500 messages/second
+
+  Higher throughput means the system can handle more messages quickly.
+
+  7. Latency
+
+  Latency means how long one message takes to travel from publisher to subscriber.
+
+  In your code, latency is measured from:
+
+  message created by publisher
+
+  to:
+
+  message received by subscriber
+
+  Lower latency is better.
+
+  Latency Sub-Metrics
+
+  Minimum latency
+
+  Fastest message delivery time.
+
+  min = 1.2 ms
+
+  Average latency
+
+  Average delivery time of all messages.
+
+  avg = 5.4 ms
+
+  Useful, but can be affected by a few very slow messages.
+
+  Median latency
+
+  Middle value after sorting all latencies.
+
+  median = 4.8 ms
+
+  Often more reliable than average because it is less affected by extreme values.
+
+  P95 latency
+
+  95th percentile latency.
+
+  Example:
+
+  p95 = 12 ms
+
+  This means 95% of messages were delivered within 12 ms, and 5% were slower.
+
+  P95 is very important because it shows worst-case behavior better than average.
+
+  Maximum latency
+
+  Slowest message delivery time.
+
+  max = 25 ms
+
+  Shows the worst single message delay.
+
+  Publisher Rate
+
+  In the automated runner, you may also see:
+
+  publisher_rate_msg_per_sec
+
+  This means how fast the publisher sent messages.
+
+  Formula:
+
+  sent / publisher_duration
+
+  It is different from subscriber throughput.
+
+  Subscriber Throughput vs Publisher Rate
+
+   Metric                   Meaning
+  ━━━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Publisher rate           How fast messages were sent
+  ───────────────────────  ───────────────────────────────────────────
+   Subscriber throughput    How fast messages were received/processed
+
+  If publisher rate is very high but subscriber throughput is low, the broker or consumer may be the
+  bottleneck.
+
+  For Your Comparison
+
+  Use this interpretation:
+
+   Metric             Better Value
+  ━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━
+   Throughput         Higher is better
+  ─────────────────  ──────────────────
+   Publisher rate     Higher is better
+  ─────────────────  ──────────────────
+   Success rate       Higher is better
+  ─────────────────  ──────────────────
+   Lost messages      Lower is better
+  ─────────────────  ──────────────────
+   Average latency    Lower is better
+  ─────────────────  ──────────────────
+   Median latency     Lower is better
+  ─────────────────  ──────────────────
+   P95 latency        Lower is better
+  ─────────────────  ──────────────────
+   Max latency        Lower is better
+
+  Simple Example Sentence
+
+  RabbitMQ achieved higher throughput, but MQTT QoS 1 had lower average latency. Both systems had
+  100% success rate, meaning no messages were lost during the test.
+
+
