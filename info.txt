@@ -191,3 +191,304 @@
   100% success rate, meaning no messages were lost during the test.
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  Next Work Plan
+
+  1. Run Final Benchmark Matrix
+
+  Run consistent tests for both systems:
+
+  python run_benchmarks.py \
+    --runs 5 \
+    --counts 1000,10000 \
+    --payload-sizes 128,512,1024 \
+    --mqtt-qos 0,1,2
+
+  This gives enough data for a serious comparison.
+
+  2. Create Graphs
+
+  Use the benchmark-aggregate-*.csv file and create:
+
+  - Throughput vs payload size
+  - Average latency vs payload size
+  - P95 latency vs payload size
+  - Success rate vs payload size
+  - MQTT QoS comparison graph
+
+  3. Add Resource Usage
+
+  Measure CPU and memory while benchmarks run:
+
+  podman stats
+
+  Then add CPU/memory comparison to your report.
+
+  This improves the project because performance is not only speed. A system may be fast but consume
+  more resources.
+
+  4. Add Multiple Publishers
+
+  Current project uses:
+
+  1 publisher -> broker -> 1 subscriber
+
+  Next improvement:
+
+  multiple publishers -> broker -> subscriber
+
+  Example future tests:
+
+  1 publisher
+  5 publishers
+  10 publishers
+  25 publishers
+
+  This shows scalability.
+
+  5. Add Multiple Subscribers
+
+  For MQTT:
+
+  publisher -> broker -> multiple subscribers
+
+  For RabbitMQ:
+
+  publisher -> queue -> multiple consumers
+
+  This tests fan-out and load balancing behavior.
+
+  6. Test Reliability
+
+  Add failure scenarios:
+
+  - Stop subscriber during publishing
+  - Restart broker
+  - Send high message load
+  - Compare lost messages
+  - Compare recovery behavior
+
+  This will make the comparison stronger than only latency/throughput.
+
+  7. Improve RabbitMQ Fairness
+
+  Right now RabbitMQ uses basic non-durable queue settings.
+
+  Later compare:
+
+  - Non-durable queue
+  - Durable queue
+  - Persistent messages
+  - Manual acknowledgements
+
+  That shows the tradeoff between speed and reliability.
+
+  8. Improve MQTT Fairness
+  QoS 1: at least once
+  QoS 2: exactly once
+
+  This gives a better explanation of why MQTT results change.
+
+  Final report structure:
+
+  1. Introduction
+  2. Objective
+  3. RabbitMQ Overview
+  4. MQTT Overview
+  5. System Architecture
+  6. Experimental Setup
+  7. Methodology
+  8. Results
+  9. Graphs
+  10. Analysis
+  11. Limitations
+  12. Conclusion
+  13. Future Scope
+
+  10. Optional: Add Dashboard
+
+  If you want to make it look like a stronger final-year/internship project, build a small dashboard:
+
+  CSV results -> graph dashboard
+
+  Using Python:
+
+  streamlit
+
+  or simple:
+
+  matplotlib
+
+  Best Immediate Next Step
+
+  Generate graphs automatically from your CSV.
+
+  That means project flow becomes:
+
+  run_benchmarks.py -> results CSV -> graph images -> report
+
+  This is the most useful next improvement.
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  › how publisher and subscriber is running ? and where is broker
+
+
+• In your project, there are three parts:
+
+  Publisher  ->  Broker  ->  Subscriber/Consumer
+
+  1. Broker
+
+  The broker is RabbitMQ or MQTT server.
+
+  It is running inside the Podman/Docker container.
+
+  For RabbitMQ:
+
+  docker run --rm -p 5672:5672 --name rabbitmq-benchmark rabbitmq:3-management
+
+  Broker location:
+
+  RabbitMQ broker = inside container
+  Host access = localhost:5672
+
+  For MQTT:
+
+  docker run --rm -p 1883:1883 --name mqtt-benchmark eclipse-mosquitto:2 mosquitto -c /mosquitto-no-
+  auth.conf
+
+  Broker location:
+
+  MQTT broker = inside container
+  Host access = localhost:1883
+
+  You can see brokers with:
+
+  podman ps
+
+  2. Publisher
+
+  The publisher is your Python process.
+
+  When you run:
+
+  python benchmark_rabbitmq.py --role publisher --count 1000 --payload-size 256
+
+  or:
+
+  python benchmark_mqtt.py --role publisher --count 1000 --payload-size 256 --qos 1
+
+  that Python script becomes the publisher.
+
+  It sends messages to the broker.
+
+  3. Subscriber / Consumer
+
+  The subscriber is also your Python process, but running in a different role.
+
+  RabbitMQ calls it a consumer:
+
+  python benchmark_rabbitmq.py --role subscriber --count 1000 --payload-size 256
+
+  MQTT calls it a subscriber:
+
+  python benchmark_mqtt.py --role subscriber --count 1000 --payload-size 256 --qos 1
+
+  It receives messages from the broker.
+
+  When using automated runner
+
+  When you run:
+
+  python run_benchmarks.py --systems rabbitmq --runs 5 --counts 1000 --payload-sizes 256
+
+  the runner automatically starts two Python processes:
+
+  Process 1: benchmark_rabbitmq.py --role subscriber
+  Process 2: benchmark_rabbitmq.py --role publisher
+
+  The broker is not started by the runner. The broker must already be running in Podman/Docker.
+
+  So the complete RabbitMQ flow is:
+
+  Python subscriber process
+          ^
+          |
+  RabbitMQ broker inside Podman container
+          ^
+          |
+  Python publisher process
+
+  More accurately:
+
+  Publisher Python process
+      |
+      | sends to localhost:5672
+      v
+  RabbitMQ broker container
+      |
+      | delivers from queue
+      v
+  Subscriber Python process
+
+  For MQTT:
+
+  Publisher Python process
+      |
+      | publishes to localhost:1883 topic
+      v
+  Mosquitto broker container
+      |
+      | forwards topic messages
+      v
+  Subscriber Python process
+
+  So in short:
+
+   Part                   Where it runs
+  ━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Broker                 Inside Podman/Docker container
+  ─────────────────────  ──────────────────────────────────────────────────────────────
+   Publisher              Your local Python process
+  ─────────────────────  ──────────────────────────────────────────────────────────────
+   Subscriber/Consumer    Your local Python process
+  ─────────────────────  ──────────────────────────────────────────────────────────────
+   Automated runner       Your local Python process that starts publisher + subscriber
+
+
+
+

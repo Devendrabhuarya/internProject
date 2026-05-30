@@ -1,0 +1,6 @@
+system,run,count,payload_size,qos,sent,received,lost,success_rate_percent,subscriber_duration_seconds,subscriber_throughput_msg_per_sec,publisher_duration_seconds,publisher_rate_msg_per_sec,latency_min_ms,latency_avg_ms,latency_median_ms,latency_p95_ms,latency_max_ms,status,error
+RabbitMQ,1,1000,256,,1000,1000,0,100.0,0.1149,8700.21,0.0726,13771.12,0.659,33.697,40.386,45.301,45.714,ok,
+RabbitMQ,2,1000,256,,1000,1000,0,100.0,0.0852,11733.82,0.046,21752.72,1.222,22.484,24.02,38.898,40.511,ok,
+RabbitMQ,3,1000,256,,1000,1000,0,100.0,0.0975,10259.99,0.0477,20953.74,0.478,32.285,34.653,48.748,50.258,ok,
+RabbitMQ,4,1000,256,,1000,1000,0,100.0,0.0862,11600.67,0.0458,21840.31,0.303,21.543,22.256,38.998,40.756,ok,
+RabbitMQ,5,1000,256,,1000,1000,0,100.0,0.0843,11869.09,0.0449,22284.21,0.369,21.538,22.837,38.17,39.785,ok,

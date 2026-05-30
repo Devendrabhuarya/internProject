@@ -1,0 +1,2 @@
+system,count,payload_size,qos,ok_runs,avg_success_rate_percent,avg_subscriber_throughput_msg_per_sec,avg_publisher_rate_msg_per_sec,avg_latency_avg_ms,avg_latency_p95_ms,avg_latency_max_ms
+RabbitMQ,1000,256,,5,100.0,10504.804,21725.08,29.31,50.098,52.007
