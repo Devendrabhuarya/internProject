@@ -1,0 +1,7 @@
+metric,unit,rabbitmq_mean,mqtt_mean,winner,difference_percent
+Subscriber throughput,msg/sec,10832.756,8970.596,RabbitMQ,20.76
+Publisher rate,msg/sec,20120.420,8897.584,RabbitMQ,126.13
+Average latency,ms,26.309,0.086,MQTT,30350.69
+P95 latency,ms,42.023,0.169,MQTT,24706.97
+Success rate,%,100.000,100.000,Tie,0.00
+Lost messages,messages,0.000,0.000,Tie,0.00
